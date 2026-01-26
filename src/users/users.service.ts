@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserDto, UserRole } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
@@ -13,8 +13,12 @@ export class UsersService {
   ) {}
 
   // CREATE
-  create(data: CreateUserDto) {
-    const user = this.userRepo.create(data);
+  async create(dto: CreateUserDto) {
+    const user = this.userRepo.create({
+      ...dto,
+      role: dto.role ?? UserRole.USER, // ✅ default role
+    });
+
     return this.userRepo.save(user);
   }
 
@@ -31,9 +35,9 @@ export class UsersService {
   }
 
   // UPDATE
-  async update(id: number, data: UpdateUserDto) {
+  async update(id: number, dto: UpdateUserDto) {
     const user = await this.findOne(id);
-    Object.assign(user, data);
+    Object.assign(user, dto);
     return this.userRepo.save(user);
   }
 

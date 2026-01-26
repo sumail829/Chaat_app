@@ -1,13 +1,25 @@
-import { Entity,PrimaryGeneratedColumn,Column } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { UserRole } from './dto/create-user.dto';
 
-@Entity()
-export class User{
-    @PrimaryGeneratedColumn()
-    id:Number;
+@Entity('users')
+export class User {
+  @PrimaryGeneratedColumn()
+  id: number;
 
-    @Column()
-    name:string;
+  @Column({ unique: true })
+  email: string;
 
-    @Column({unique:true})
-    email:string;
+  @Column()
+  name: string;
+
+  @Column()
+  password: string;
+
+
+  @Column({
+    type: 'enum',
+    enum: UserRole,
+    default: UserRole.USER,
+  })
+  role: UserRole; // ✅ MUST be here
 }
