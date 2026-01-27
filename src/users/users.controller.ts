@@ -9,8 +9,9 @@ import {
   ParseIntPipe,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserDto, UserRole } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { Roles } from 'src/auth/roles.decorator';
 
 @Controller('users')
 export class UsersController {
@@ -24,6 +25,12 @@ export class UsersController {
   @Get()
   findAll() {
     return this.usersService.findAll();
+  }
+
+    @Get('admin-only')
+  @Roles(UserRole.ADMIN)
+  getAdminData() {
+    return 'Only admin can access';
   }
 
   @Get(':id')

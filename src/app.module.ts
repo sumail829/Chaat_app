@@ -13,9 +13,6 @@ import { UsersModule } from './users/users.module';
   inject: [ConfigService],
   useFactory: () => {
     const pwd = process.env.DB_PASSWORD;
-    console.log('DB_PASSWORD is', pwd, typeof pwd);
-    console.log('DB USER is',process.env.DB_USERNAME);
-    console.log('DB host is', process.env.DB_HOST);
 
     return {
       type: 'postgres',

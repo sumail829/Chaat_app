@@ -17,4 +17,16 @@ export class CreateUserDto {
 
   @IsEnum(UserRole, { message: 'Role must be admin, user, or moderator' })
   role: UserRole; // 👈 role is included here
+
+  @IsNotEmpty()
+  phone: string;
+
+  @IsNotEmpty()
+  isActive: boolean;
+
+  @IsNotEmpty()
+  createdAt: Date;
+  
+  @IsNotEmpty()
+  updatedAt: Date;
 }

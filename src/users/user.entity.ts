@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { UserRole } from './dto/create-user.dto';
 
 @Entity('users')
@@ -12,9 +12,11 @@ export class User {
   @Column()
   name: string;
 
-  @Column()
+  @Column({ select: false })
   password: string;
 
+  @Column({ nullable: true })
+  phone?: string;
 
   @Column({
     type: 'enum',
@@ -22,4 +24,13 @@ export class User {
     default: UserRole.USER,
   })
   role: UserRole; // ✅ MUST be here
+
+   @Column({ default: true })
+  isActive: boolean;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }
