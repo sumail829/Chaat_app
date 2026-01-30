@@ -12,15 +12,20 @@ import { UserRole } from '../users/dto/create-user.dto';
 export class RolesGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
 
-  canActivate(context: ExecutionContext): boolean {
-    const requiredRoles = this.reflector.getAllAndOverride<UserRole[]>(
-      ROLES_KEY,
-      [context.getHandler(), context.getClass()],
-    );
+ canActivate(context: ExecutionContext): boolean {
+  const requiredRoles = this.reflector.getAllAndOverride<UserRole[]>(
+    ROLES_KEY,
+    [context.getHandler(), context.getClass()],
+  );
 
-    if (!requiredRoles) return true;
+  if (!requiredRoles) return true;
 
-    const { user } = context.switchToHttp().getRequest();
-    return requiredRoles.includes(user.role);
-  }
+  const request = context.switchToHttp().getRequest();
+  const user = request.user;
+console.log('USER:', user);
+
+  if (!user || !user.role) return false;
+
+  return requiredRoles.includes(user.role);
+}
 }
