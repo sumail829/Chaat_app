@@ -5,6 +5,7 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { CategoryModule } from './category/category.module';
 import { MenuModule } from './menu/menu.module';
+import { TableModule } from './restaurant-table/table.module';
 
 @Module({
   imports: [
@@ -30,7 +31,7 @@ import { MenuModule } from './menu/menu.module';
   },
 }),
     UsersModule,
-    
+    TableModule,
     CategoryModule,
     MenuModule,
     AuthModule,

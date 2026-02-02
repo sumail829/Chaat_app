@@ -57,10 +57,24 @@ export class MenuService {
   }
 
   async update(id: string, dto: UpdateMenuDto): Promise<Menu> {
-    const menu = await this.findOne(id);
-    Object.assign(menu, dto);
-    return this.menuRepo.save(menu);
+  const menu = await this.findOne(id);
+
+  if (dto.categoryId) {
+    const category = await this.categoryRepo.findOne({
+      where: { id: dto.categoryId },
+    });
+
+    if (!category) {
+      throw new NotFoundException('Category not found');
+    }
+
+    menu.category = category;
   }
+
+  Object.assign(menu, dto);
+  return this.menuRepo.save(menu);
+}
+
 
   async remove(id: string): Promise<void> {
     const menu = await this.findOne(id);
