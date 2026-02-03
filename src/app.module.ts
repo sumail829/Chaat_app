@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import { CategoryModule } from './category/category.module';
 import { MenuModule } from './menu/menu.module';
 import { TableModule } from './restaurant-table/table.module';
+import { OrdersModule } from './orders/orders.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { TableModule } from './restaurant-table/table.module';
     UsersModule,
     TableModule,
     CategoryModule,
+     OrdersModule,
     MenuModule,
     AuthModule,
   ],
