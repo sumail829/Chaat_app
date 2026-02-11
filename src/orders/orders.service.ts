@@ -7,7 +7,7 @@ import { RestaurantTable } from "src/restaurant-table/table.entity";
 import { Menu } from "src/menu/menu.entity";
 import { User } from "src/users/user.entity";
 import { TableStatus } from "src/restaurant-table/table-status.enum";
-import { AddOrderItemDto } from "./dto/add-order-item.dto";
+import {  AddOrderItemsDto } from "./dto/add-order-item.dto";
 
 @Injectable()
 export class OrdersService {
@@ -47,30 +47,55 @@ export class OrdersService {
   }
 
   // 2️⃣ Add menu item to order
-  async addItem(orderId: string, dto: AddOrderItemDto) {
-    const order = await this.orderRepo.findOne({
-      where: { id: orderId },
-      relations: ['items'],
-    });
+  async addItems(orderId: string, dto: AddOrderItemsDto) {
+  const order = await this.orderRepo.findOne({
+    where: { id: orderId },
+    relations: ['items'],
+  });
 
-    if (!order) throw new NotFoundException('Order not found');
+  if (!order) {
+    throw new NotFoundException('Order not found');
+  }
 
+  let totalToAdd = 0;
+  const orderItems: OrderItem[] = [];
+
+  for (const entry of dto.items) {
     const menu = await this.menuRepo.findOne({
-      where: { id: dto.menuId, isAvailable: true },
+      where: { id: entry.menuId, isAvailable: true },
     });
 
-    if (!menu) throw new NotFoundException('Menu not available');
+    if (!menu) {
+      throw new NotFoundException(
+        `Menu item ${entry.menuId} not available`,
+      );
+    }
+
+    const subtotal = menu.price * entry.quantity;
 
     const item = this.orderItemRepo.create({
       order,
       menu,
-      quantity: dto.quantity,
+      quantity: entry.quantity,
       priceAtOrderTime: menu.price,
+      subtotal,
     });
 
-    order.totalAmount += menu.price * dto.quantity;
-
-    await this.orderRepo.save(order);
-    return this.orderItemRepo.save(item);
+    totalToAdd += subtotal;
+    orderItems.push(item);
   }
+
+  // Save all items first
+  await this.orderItemRepo.save(orderItems);
+
+  // Then update order total
+  order.totalAmount += totalToAdd;
+  await this.orderRepo.save(order);
+
+  return {
+    message: 'Items added successfully',
+    addedItems: orderItems,
+    newTotalAmount: order.totalAmount,
+  };
+}
 }

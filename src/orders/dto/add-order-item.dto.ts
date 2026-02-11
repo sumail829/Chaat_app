@@ -1,10 +1,11 @@
-import { IsInt, IsUUID, Min } from 'class-validator';
+import { Type } from 'class-transformer';
+import { ValidateNested, IsArray, ArrayNotEmpty } from 'class-validator';
+import { OrderItemInputDto } from './order-item-input.dto';
 
-export class AddOrderItemDto {
-  @IsUUID()
-  menuId: string;
-
-  @IsInt()
-  @Min(1)
-  quantity: number;
+export class AddOrderItemsDto {
+  @IsArray()
+  @ArrayNotEmpty()
+  @ValidateNested({ each: true })
+  @Type(() => OrderItemInputDto)
+  items: OrderItemInputDto[];
 }

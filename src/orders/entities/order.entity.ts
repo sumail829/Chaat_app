@@ -7,11 +7,13 @@ import {
   OneToMany,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToOne,
 } from 'typeorm';
-import { User } from '../../users/user.entity';
+import { User } from 'src/users/user.entity';
 import { RestaurantTable } from '../../restaurant-table/table.entity';
 import { OrderItem } from './order-item.entity';
 import { OrderStatus } from '../order-status.enum';
+import { Payment } from 'src/payments/entities/payment.entity';
 
 @Entity('orders')
 export class Order {
@@ -27,6 +29,9 @@ user: User;
   @ManyToOne(() => RestaurantTable)
   table: RestaurantTable;
 
+  @OneToOne(() => Payment, (payment) => payment.order, { cascade: true })
+  payment: Payment;
+
   @OneToMany(() => OrderItem, (item) => item.order, {
     cascade: true,
   })
@@ -39,7 +44,7 @@ user: User;
   })
   status: OrderStatus;
 
-  @Column('decimal', { precision: 10, scale: 2, default: 0 })
+  @Column('decimal', { default: 0 })
   totalAmount: number;
 
   @CreateDateColumn()

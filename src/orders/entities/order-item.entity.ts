@@ -24,4 +24,7 @@ export class OrderItem {
 
   @Column('decimal', { precision: 10, scale: 2 })
   priceAtOrderTime: number;
+
+  @Column({ default: 0 })
+  subtotal:number;
 }
