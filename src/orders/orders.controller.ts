@@ -1,4 +1,4 @@
-import { Body, Controller, Param, Post, Req, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Req, UseGuards } from "@nestjs/common";
 import { OrdersService } from "./orders.service";
 import { CreateOrderDto } from "./dto/create-order.dto";
 import { AddOrderItemsDto } from "./dto/add-order-item.dto";
@@ -22,4 +22,10 @@ createOrder(@Req() req, @Body() dto: CreateOrderDto) {
   ) {
     return this.ordersService.addItems(orderId, dto);
   }
+
+  @Get()
+  findAll(){
+    return this.ordersService.findAllorders()
+  }
+
 }

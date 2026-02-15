@@ -44,8 +44,17 @@ user: User;
   })
   status: OrderStatus;
 
-  @Column('decimal', { default: 0 })
-  totalAmount: number;
+  @Column({
+  type: 'decimal',
+  precision: 10,
+  scale: 2,
+  default: 0,
+  transformer: {
+    to: (value: number) => value,
+    from: (value: string) => parseFloat(value),
+  },
+})
+totalAmount: number;
 
   @CreateDateColumn()
   createdAt: Date;

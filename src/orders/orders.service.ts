@@ -98,4 +98,9 @@ export class OrdersService {
     newTotalAmount: order.totalAmount,
   };
 }
+
+  async findAllorders(){
+    return this.orderRepo.find();
+  }
 }
+

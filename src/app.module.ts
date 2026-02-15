@@ -28,7 +28,9 @@ import { PaymentModule } from './payments/payment.module';
       password: pwd,  
       database: process.env.DB_NAME,
       autoLoadEntities: true,
-      synchronize: true,
+      synchronize: false,
+      migrations: [__dirname + '/migrations/*{.ts,.js}'],
+      entities: [__dirname + '/**/*.entity{.ts,.js}'],
     };
   },
 }),
