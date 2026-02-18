@@ -27,14 +27,12 @@ export class PaymentService {
   async completePayment(orderId: string, dto: CompletePaymentDto) {
     return this.dataSource.transaction(async (manager) => {
 
-      const order = await manager
-        .getRepository(Order)
-        .createQueryBuilder('order')
-        .setLock('pessimistic_write')
-        .leftJoinAndSelect('order.payment', 'payment')
-        .leftJoinAndSelect('order.table', 'table')
-        .where('order.id = :orderId', { orderId })
-        .getOne();
+     const order = await manager
+  .getRepository(Order)
+  .createQueryBuilder('order')
+  .setLock('pessimistic_write')
+  .where('order.id = :orderId', { orderId })
+  .getOne();
 
       if (!order) throw new NotFoundException('Order not found');
       if (!order.payment)

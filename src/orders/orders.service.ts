@@ -8,7 +8,9 @@ import { Menu } from "src/menu/menu.entity";
 import { User } from "src/users/user.entity";
 import { TableStatus } from "src/restaurant-table/table-status.enum";
 import {  AddOrderItemsDto } from "./dto/add-order-item.dto";
-
+import { Payment } from "src/payments/entities/payment.entity";
+import { PaymentStatus } from "src/payments/payment-enum/payment-status.enum";
+import { OrderStatus } from "./order-status.enum";
 @Injectable()
 export class OrdersService {
   constructor(
@@ -23,10 +25,16 @@ export class OrdersService {
 
     @InjectRepository(Menu)
     private menuRepo: Repository<Menu>,
+
+    @InjectRepository(Payment)
+    private paymentRepo: Repository<Payment>,
   ) {}
 
-  // 1️⃣ Create order + assign table
-  async createOrder(user: User, tableId: string) {
+  // ----------------------------
+  // 1️⃣ Create order + assign table (no payment yet)
+  // ----------------------------
+  async createOrder(user: User, tableId: string): Promise<Order> {
+    // Find table and check availability
     const table = await this.tableRepo.findOne({
       where: { id: tableId, status: TableStatus.AVAILABLE },
     });
@@ -35,72 +43,99 @@ export class OrdersService {
       throw new BadRequestException('Table not available');
     }
 
+    // Mark table as occupied
     table.status = TableStatus.OCCUPIED;
     await this.tableRepo.save(table);
 
+    // Create order
     const order = this.orderRepo.create({
       user,
       table,
+      totalAmount: 0,
+      status: OrderStatus.PENDING, // ✅ Use enum
     });
 
-    return this.orderRepo.save(order);
+    const savedOrder = await this.orderRepo.save(order);
+
+    return savedOrder;
   }
 
-  // 2️⃣ Add menu item to order
+  // ----------------------------
+  // 2️⃣ Add items to order + create/update payment
+  // ----------------------------
   async addItems(orderId: string, dto: AddOrderItemsDto) {
-  const order = await this.orderRepo.findOne({
-    where: { id: orderId },
-    relations: ['items'],
-  });
-
-  if (!order) {
-    throw new NotFoundException('Order not found');
-  }
-
-  let totalToAdd = 0;
-  const orderItems: OrderItem[] = [];
-
-  for (const entry of dto.items) {
-    const menu = await this.menuRepo.findOne({
-      where: { id: entry.menuId, isAvailable: true },
+    // Fetch order with items and payment
+    const order = await this.orderRepo.findOne({
+      where: { id: orderId },
+      relations: ['items', 'payment'],
     });
 
-    if (!menu) {
-      throw new NotFoundException(
-        `Menu item ${entry.menuId} not available`,
-      );
+    if (!order) {
+      throw new NotFoundException('Order not found');
     }
 
-    const subtotal = menu.price * entry.quantity;
+    let totalToAdd = 0;
+    const orderItems: OrderItem[] = [];
 
-    const item = this.orderItemRepo.create({
-      order,
-      menu,
-      quantity: entry.quantity,
-      priceAtOrderTime: menu.price,
-      subtotal,
-    });
+    // Add each menu item
+    for (const entry of dto.items) {
+      const menu = await this.menuRepo.findOne({
+        where: { id: entry.menuId, isAvailable: true },
+      });
 
-    totalToAdd += subtotal;
-    orderItems.push(item);
+      if (!menu) {
+        throw new NotFoundException(`Menu item ${entry.menuId} not available`);
+      }
+
+      const subtotal = menu.price * entry.quantity;
+
+      const item = this.orderItemRepo.create({
+        order,
+        menu,
+        quantity: entry.quantity,
+        priceAtOrderTime: menu.price,
+        subtotal,
+      });
+
+      totalToAdd += subtotal;
+      orderItems.push(item);
+    }
+
+    // Save items
+    await this.orderItemRepo.save(orderItems);
+
+    // Update order total
+    order.totalAmount += totalToAdd;
+    await this.orderRepo.save(order);
+
+    // ✅ Create or update payment
+    let payment = order.payment;
+
+    if (!payment) {
+      // Create new payment
+      payment = this.paymentRepo.create({
+        order,
+        amount: order.totalAmount,
+        status: PaymentStatus.PENDING,
+      });
+    } else {
+      // Update existing payment
+      payment.amount = order.totalAmount;
+    }
+
+    await this.paymentRepo.save(payment);
+
+    return {
+      message: 'Items added successfully',
+      addedItems: orderItems,
+      newTotalAmount: order.totalAmount,
+      paymentId: payment.id,
+      paymentStatus: payment.status,
+    };
   }
 
-  // Save all items first
-  await this.orderItemRepo.save(orderItems);
-
-  // Then update order total
-  order.totalAmount += totalToAdd;
-  await this.orderRepo.save(order);
-
-  return {
-    message: 'Items added successfully',
-    addedItems: orderItems,
-    newTotalAmount: order.totalAmount,
-  };
-}
-
-  async findAllorders(){
-    return this.orderRepo.find();
+  // Optional: fetch all orders
+  async findAllorders(): Promise<Order[]> {
+    return this.orderRepo.find({ relations: ['items', 'payment', 'table', 'user'] });
   }
 }
-
