@@ -27,12 +27,33 @@ export class PaymentService {
   async completePayment(orderId: string, dto: CompletePaymentDto) {
     return this.dataSource.transaction(async (manager) => {
 
+      // Lock only order
      const order = await manager
-  .getRepository(Order)
-  .createQueryBuilder('order')
-  .setLock('pessimistic_write')
-  .where('order.id = :orderId', { orderId })
-  .getOne();
+    .getRepository(Order)
+    .createQueryBuilder('order')
+    .where('order.id = :orderId', { orderId })
+    .setLock('pessimistic_write')
+    .getOne();
+
+  if (!order)
+    throw new NotFoundException('Order not found');
+
+  const payment = await manager.getRepository(Payment).findOne({
+    where: { order: { id: orderId } },
+  });
+
+  if (!payment)
+    throw new BadRequestException('Payment record missing');
+
+  const table = await manager.getRepository(RestaurantTable).findOne({
+    where: { id: order.tableId },
+  });
+
+  if (!table)
+    throw new BadRequestException('Table not found');
+
+
+      order.table = table;
 
       if (!order) throw new NotFoundException('Order not found');
       if (!order.payment)

@@ -30,11 +30,9 @@ export class OrdersService {
     private paymentRepo: Repository<Payment>,
   ) {}
 
-  // ----------------------------
-  // 1️⃣ Create order + assign table (no payment yet)
-  // ----------------------------
+
   async createOrder(user: User, tableId: string): Promise<Order> {
-    // Find table and check availability
+  
     const table = await this.tableRepo.findOne({
       where: { id: tableId, status: TableStatus.AVAILABLE },
     });
@@ -43,16 +41,15 @@ export class OrdersService {
       throw new BadRequestException('Table not available');
     }
 
-    // Mark table as occupied
+
     table.status = TableStatus.OCCUPIED;
     await this.tableRepo.save(table);
 
-    // Create order
     const order = this.orderRepo.create({
       user,
       table,
       totalAmount: 0,
-      status: OrderStatus.PENDING, // ✅ Use enum
+      status: OrderStatus.PENDING, 
     });
 
     const savedOrder = await this.orderRepo.save(order);
@@ -60,11 +57,9 @@ export class OrdersService {
     return savedOrder;
   }
 
-  // ----------------------------
-  // 2️⃣ Add items to order + create/update payment
-  // ----------------------------
+  
   async addItems(orderId: string, dto: AddOrderItemsDto) {
-    // Fetch order with items and payment
+    
     const order = await this.orderRepo.findOne({
       where: { id: orderId },
       relations: ['items', 'payment'],
@@ -77,7 +72,7 @@ export class OrdersService {
     let totalToAdd = 0;
     const orderItems: OrderItem[] = [];
 
-    // Add each menu item
+  
     for (const entry of dto.items) {
       const menu = await this.menuRepo.findOne({
         where: { id: entry.menuId, isAvailable: true },
@@ -101,25 +96,25 @@ export class OrdersService {
       orderItems.push(item);
     }
 
-    // Save items
+ 
     await this.orderItemRepo.save(orderItems);
 
-    // Update order total
-    order.totalAmount += totalToAdd;
+   
+    order.totalAmount = order.totalAmount + totalToAdd;
     await this.orderRepo.save(order);
 
-    // ✅ Create or update payment
+   
     let payment = order.payment;
 
     if (!payment) {
-      // Create new payment
+    
       payment = this.paymentRepo.create({
-        order,
+        orderId: order.id,
         amount: order.totalAmount,
         status: PaymentStatus.PENDING,
       });
     } else {
-      // Update existing payment
+    
       payment.amount = order.totalAmount;
     }
 
@@ -134,7 +129,7 @@ export class OrdersService {
     };
   }
 
-  // Optional: fetch all orders
+ 
   async findAllorders(): Promise<Order[]> {
     return this.orderRepo.find({ relations: ['items', 'payment', 'table', 'user'] });
   }

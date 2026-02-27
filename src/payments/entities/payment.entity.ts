@@ -12,6 +12,9 @@ export class Payment {
   @JoinColumn()
   order: Order;
 
+  @Column()
+orderId: string;
+
   @Column('decimal')
   amount: number;
 

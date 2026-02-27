@@ -8,6 +8,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToOne,
+  JoinColumn,
 } from 'typeorm';
 import { User } from 'src/users/user.entity';
 import { RestaurantTable } from '../../restaurant-table/table.entity';
@@ -26,8 +27,12 @@ export class Order {
   @ManyToOne(() => User, (user) => user.orders, { nullable: false })
 user: User;
 
-  @ManyToOne(() => RestaurantTable)
-  table: RestaurantTable;
+@ManyToOne(() => RestaurantTable)
+@JoinColumn({ name: 'tableId' })
+table: RestaurantTable;
+
+@Column()
+tableId: string;
 
   @OneToOne(() => Payment, (payment) => payment.order, { cascade: true })
   payment: Payment;
