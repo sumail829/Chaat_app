@@ -56,34 +56,22 @@ export class PaymentService {
       order.table = table;
 
       if (!order) throw new NotFoundException('Order not found');
-      if (!order.payment)
-        throw new BadRequestException('Payment record missing');
+    if (payment.status === PaymentStatus.PAID)
+  throw new BadRequestException('Payment already completed');
 
-      if (order.payment.status === PaymentStatus.PAID)
-        throw new BadRequestException('Payment already completed');
+if (Number(payment.amount) !== Number(order.totalAmount))
+  throw new BadRequestException('Payment amount mismatch');
 
-      if (order.payment.amount !== order.totalAmount)
-        throw new BadRequestException('Payment amount mismatch');
+payment.status = PaymentStatus.PAID;
+payment.method = dto.method;
+payment.completedBy = dto.completedBy ?? null;
 
-      // ✅ Payment
-      order.payment.status = PaymentStatus.PAID;
-      order.payment.method = dto.method;
-      order.payment.completedBy = dto.completedBy ?? null;
+order.status = OrderStatus.SERVED;
+table.status = TableStatus.AVAILABLE;
 
-      // ✅ Order
-      order.status = OrderStatus.SERVED;
-
-      // ✅ Table
-      if (order.table.status !== TableStatus.OCCUPIED) {
-        throw new BadRequestException('Table is not occupied');
-      }
-
-      order.table.status = TableStatus.AVAILABLE;
-
-
-      await manager.save(order.payment);
-      await manager.save(order);
-      await manager.save(order.table);
+await manager.save(payment);
+await manager.save(order);
+await manager.save(table);
 
       return {
         message: 'Payment completed successfully',
