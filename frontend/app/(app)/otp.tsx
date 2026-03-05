@@ -30,7 +30,7 @@ export default function OtpScreen() {
     const code = otp.join("");
     if (code.length < 4) { setError("Please enter the 4-digit OTP"); return; }
     // Mock: accept any 4-digit OTP
-    router.replace("/(tabs)/home");
+    router.replace("/(app)/login");
   };
 
   return (
@@ -93,7 +93,7 @@ export default function OtpScreen() {
           <Text className="text-white font-bold text-lg">Verify & Continue</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => router.back()} className="items-center mb-4">
+        <TouchableOpacity onPress={() => router.push("/(app)/login")} className="items-center mb-4">
           <Text className="text-gray-400 text-sm">← Change phone number</Text>
         </TouchableOpacity>
       </View>

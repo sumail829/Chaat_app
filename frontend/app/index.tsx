@@ -34,7 +34,7 @@ export default function Landing() {
         {/* CTA Buttons */}
         <TouchableOpacity
           className="bg-orange-500 rounded-2xl py-4 items-center mb-4"
-          onPress={() => router.push("/login")}
+          onPress={() => router.push("/(app)/register")}
         >
           <Text className="text-white font-bold text-lg">Get Started</Text>
         </TouchableOpacity>

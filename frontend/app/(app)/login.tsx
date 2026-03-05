@@ -1,11 +1,22 @@
-import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+} from "react-native";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 
 export default function Login() {
   const router = useRouter();
-  const [phone, setPhone] = useState("");
   const [focused, setFocused] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [form, setForm] = useState({ email: "", password: "" });
+
+  const isValid = form.email.includes("@") && form.password.length >= 6;
 
   return (
     <KeyboardAvoidingView
@@ -22,53 +33,83 @@ export default function Login() {
 
         <View className="flex-1 px-6 pt-10">
           <Text className="text-gray-800 text-2xl font-bold mb-1">Welcome back! 👋</Text>
-          <Text className="text-gray-400 text-sm mb-8">Enter your mobile number to get started</Text>
+          <Text className="text-gray-400 text-sm mb-8">Sign in to your account</Text>
 
-          {/* Phone Input */}
-          <Text className="text-gray-600 font-semibold mb-2">Mobile Number</Text>
-          <View className={`flex-row items-center border rounded-xl px-4 py-3 mb-4 ${focused === "phone" ? "border-orange-500 bg-orange-50" : "border-gray-200 bg-gray-50"}`}>
-            <Text className="text-gray-500 mr-2 text-base">🇮🇳 +91</Text>
+          {/* Email */}
+          <Text className="text-gray-600 font-semibold mb-2">Email Address</Text>
+          <View
+            className={`flex-row items-center border rounded-xl px-4 py-3 mb-4 ${
+              focused === "email"
+                ? "border-orange-500 bg-orange-50"
+                : "border-gray-200 bg-gray-50"
+            }`}
+          >
+            <Text className="text-gray-400 mr-2">✉️</Text>
             <TextInput
               className="flex-1 text-gray-800 text-base"
-              placeholder="9876543210"
+              placeholder="john@example.com"
               placeholderTextColor="#9ca3af"
-              keyboardType="phone-pad"
-              maxLength={10}
-              value={phone}
-              onChangeText={setPhone}
-              onFocus={() => setFocused("phone")}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              value={form.email}
+              onChangeText={(v) => setForm({ ...form, email: v })}
+              onFocus={() => setFocused("email")}
               onBlur={() => setFocused("")}
             />
           </View>
 
-          {/* OR divider */}
-          <View className="flex-row items-center my-6">
-            <View className="flex-1 h-px bg-gray-200" />
-            <Text className="text-gray-400 mx-4 text-xs">OR CONTINUE WITH</Text>
-            <View className="flex-1 h-px bg-gray-200" />
+          {/* Password */}
+          <Text className="text-gray-600 font-semibold mb-2">Password</Text>
+          <View
+            className={`flex-row items-center border rounded-xl px-4 py-3 mb-2 ${
+              focused === "password"
+                ? "border-orange-500 bg-orange-50"
+                : "border-gray-200 bg-gray-50"
+            }`}
+          >
+            <Text className="text-gray-400 mr-2">🔒</Text>
+            <TextInput
+              className="flex-1 text-gray-800 text-base"
+              placeholder="Enter your password"
+              placeholderTextColor="#9ca3af"
+              secureTextEntry={!showPassword}
+              value={form.password}
+              onChangeText={(v) => setForm({ ...form, password: v })}
+              onFocus={() => setFocused("password")}
+              onBlur={() => setFocused("")}
+            />
+            <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+              <Text className="text-gray-400 text-sm">{showPassword ? "Hide" : "Show"}</Text>
+            </TouchableOpacity>
           </View>
 
-          {/* Social Logins */}
-          <View className="flex-row gap-4">
-            <TouchableOpacity className="flex-1 border border-gray-200 rounded-xl py-3 items-center flex-row justify-center gap-2">
-              <Text className="text-lg">G</Text>
-              <Text className="text-gray-700 font-semibold">Google</Text>
-            </TouchableOpacity>
-            <TouchableOpacity className="flex-1 border border-gray-200 rounded-xl py-3 items-center flex-row justify-center gap-2">
-              <Text className="text-lg">𝕗</Text>
-              <Text className="text-gray-700 font-semibold">Facebook</Text>
-            </TouchableOpacity>
-          </View>
+          {/* Forgot password */}
+          <TouchableOpacity className="items-end mb-6">
+            <Text className="text-orange-500 text-sm font-semibold">Forgot Password?</Text>
+          </TouchableOpacity>
 
           <View className="flex-1" />
 
-          {/* Submit */}
+          {/* Sign In */}
           <TouchableOpacity
-            className={`rounded-2xl py-4 items-center mb-6 ${phone.length === 10 ? "bg-orange-500" : "bg-orange-200"}`}
-            disabled={phone.length !== 10}
-            onPress={() => router.push({ pathname: "/otp", params: { phone } })}
+            className={`rounded-2xl py-4 items-center mb-4 ${
+              isValid ? "bg-orange-500" : "bg-orange-200"
+            }`}
+            disabled={!isValid}
+            onPress={() => router.replace("/(tabs)/home")}
           >
-            <Text className="text-white font-bold text-lg">Send OTP</Text>
+            <Text className="text-white font-bold text-lg">Sign In</Text>
+          </TouchableOpacity>
+
+          {/* Register link */}
+          <TouchableOpacity
+            className="items-center mb-8"
+            onPress={() => router.push("/(app)/register")}
+          >
+            <Text className="text-gray-400 text-sm">
+              New here?{" "}
+              <Text className="text-orange-500 font-semibold">Create Account</Text>
+            </Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
