@@ -41,7 +41,7 @@ export default function Landing() {
 
         <TouchableOpacity
           className="border border-white/50 rounded-2xl py-4 items-center"
-          onPress={() => router.push("/(tabs)")}
+          onPress={() => router.push("/(tabs)/home")}
         >
           <Text className="text-white font-semibold text-base">Browse as Guest</Text>
         </TouchableOpacity>

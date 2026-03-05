@@ -1,27 +1,21 @@
 import { View, Text, FlatList, TouchableOpacity, Image, TextInput, ScrollView } from "react-native";
 import { useState } from "react";
+import { useRouter } from "expo-router";
 import { FOODS, CATEGORIES } from "../../constants/food";
-import { router } from "expo-router";
+import { useCartStore } from "../../store/cartStore";
 
 export default function MenuScreen() {
+  const router = useRouter();
   const [activeCategory, setActiveCategory] = useState("All");
-  const [cart, setCart] = useState<Record<string, number>>({});
   const [search, setSearch] = useState("");
+
+  const { items, addItem, removeItem } = useCartStore();
 
   const filtered = FOODS.filter(f => {
     const matchCat = activeCategory === "All" || f.category === activeCategory;
     const matchSearch = f.name.toLowerCase().includes(search.toLowerCase());
     return matchCat && matchSearch;
   });
-
-  const addToCart = (id: string) => setCart(c => ({ ...c, [id]: (c[id] || 0) + 1 }));
-  const removeFromCart = (id: string) => setCart(c => {
-    const n = { ...c };
-    if (n[id] > 1) n[id]--; else delete n[id];
-    return n;
-  });
-
-  const totalItems = Object.values(cart).reduce((a, b) => a + b, 0);
 
   return (
     <View className="flex-1 bg-gray-50">
@@ -59,63 +53,73 @@ export default function MenuScreen() {
         data={filtered}
         keyExtractor={i => i.id}
         numColumns={2}
-        contentContainerStyle={{ padding: 12, paddingBottom: 100 }}
+        contentContainerStyle={{ padding: 12, paddingBottom: 140 }}
         columnWrapperStyle={{ gap: 12 }}
         ItemSeparatorComponent={() => <View className="h-3" />}
-        renderItem={({ item }) => (
-          <View className="flex-1 bg-white rounded-2xl overflow-hidden shadow-sm">
-            <View className="relative">
-              <Image source={{ uri: item.image }} className="w-full h-36" resizeMode="cover" />
-              {item.popular && (
-                <View className="absolute top-2 left-2 bg-orange-500 rounded-full px-2 py-0.5">
-                  <Text className="text-white text-xs font-bold">🔥 Popular</Text>
-                </View>
-              )}
-            </View>
-            <View className="p-3">
-              <Text className="text-gray-800 font-bold text-sm" numberOfLines={1}>{item.name}</Text>
-              <Text className="text-gray-400 text-xs mt-0.5 leading-4" numberOfLines={2}>{item.description}</Text>
-              <View className="flex-row items-center mt-1 gap-1">
-                <Text className="text-yellow-400 text-xs">⭐</Text>
-                <Text className="text-gray-500 text-xs">{item.rating}</Text>
-              </View>
-              <View className="flex-row items-center justify-between mt-2">
-                <Text className="text-orange-500 font-bold text-base">₹{item.price}</Text>
-                {cart[item.id] ? (
-                  <View className="flex-row items-center gap-2 bg-orange-50 rounded-full px-2 py-1">
-                    <TouchableOpacity onPress={() => removeFromCart(item.id)}>
-                      <Text className="text-orange-500 font-bold text-base">−</Text>
-                    </TouchableOpacity>
-                    <Text className="text-orange-500 font-bold text-sm">{cart[item.id]}</Text>
-                    <TouchableOpacity onPress={() => addToCart(item.id)}>
-                      <Text className="text-orange-500 font-bold text-base">+</Text>
-                    </TouchableOpacity>
+        renderItem={({ item }) => {
+          const qty = items.find(i => i.id === item.id)?.quantity ?? 0;
+          return (
+            <TouchableOpacity
+              className="flex-1 bg-white rounded-2xl overflow-hidden shadow-sm"
+              onPress={() => router.push({ pathname: "/(app)/food/[id]", params: { id: item.id } })}
+            >
+              <View className="relative">
+                <Image source={{ uri: item.image }} className="w-full h-36" resizeMode="cover" />
+                {item.popular && (
+                  <View className="absolute top-2 left-2 bg-orange-500 rounded-full px-2 py-0.5">
+                    <Text className="text-white text-xs font-bold">🔥 Popular</Text>
                   </View>
-                ) : (
-                  <TouchableOpacity
-                    className="bg-orange-500 rounded-full w-8 h-8 items-center justify-center"
-                    onPress={() => addToCart(item.id)}
-                  >
-                    <Text className="text-white font-bold text-lg">+</Text>
-                  </TouchableOpacity>
                 )}
               </View>
-            </View>
-          </View>
-        )}
+              <View className="p-3">
+                <Text className="text-gray-800 font-bold text-sm" numberOfLines={1}>{item.name}</Text>
+                <Text className="text-gray-400 text-xs mt-0.5 leading-4" numberOfLines={2}>{item.description}</Text>
+                <View className="flex-row items-center mt-1 gap-1">
+                  <Text className="text-yellow-400 text-xs">⭐</Text>
+                  <Text className="text-gray-500 text-xs">{item.rating}</Text>
+                </View>
+                <View className="flex-row items-center justify-between mt-2">
+                  <Text className="text-orange-500 font-bold text-base">₹{item.price}</Text>
+                  {qty > 0 ? (
+                    <View className="flex-row items-center gap-2 bg-orange-50 rounded-full px-2 py-1">
+                      <TouchableOpacity onPress={() => removeItem(item.id)}>
+                        <Text className="text-orange-500 font-bold text-base">−</Text>
+                      </TouchableOpacity>
+                      <Text className="text-orange-500 font-bold text-sm">{qty}</Text>
+                      <TouchableOpacity onPress={() => addItem(item)}>
+                        <Text className="text-orange-500 font-bold text-base">+</Text>
+                      </TouchableOpacity>
+                    </View>
+                  ) : (
+                    <TouchableOpacity
+                      className="bg-orange-500 rounded-full w-8 h-8 items-center justify-center"
+                      onPress={() => addItem(item)}
+                    >
+                      <Text className="text-white font-bold text-lg">+</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </View>
+            </TouchableOpacity>
+          );
+        }}
       />
 
       {/* Cart Pill */}
-      {totalItems > 0 && (
+      {items.length > 0 && (
         <View className="absolute bottom-24 left-5 right-5">
-          <TouchableOpacity className="bg-orange-500 rounded-2xl py-4 px-6 flex-row items-center justify-between shadow-lg">
-          {/* onPress={() => router.push("/(tabs)/cart")} */}
+          <TouchableOpacity
+            className="bg-orange-500 rounded-2xl py-4 px-6 flex-row items-center justify-between shadow-lg"
+            onPress={() => router.push("/(tabs)/cart")}
+          >
             <View className="bg-orange-400 rounded-full w-7 h-7 items-center justify-center">
-              <Text className="text-white font-bold text-sm">{totalItems}</Text>
+              <Text className="text-white font-bold text-sm">
+                {items.reduce((s, i) => s + i.quantity, 0)}
+              </Text>
             </View>
             <Text className="text-white font-bold text-base">View Cart</Text>
             <Text className="text-orange-200 text-sm">
-              ₹{FOODS.filter(f => cart[f.id]).reduce((s, f) => s + f.price * cart[f.id], 0)}
+              ₹{items.reduce((s, i) => s + i.price * i.quantity, 0)}
             </Text>
           </TouchableOpacity>
         </View>
