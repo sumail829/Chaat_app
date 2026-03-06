@@ -6,7 +6,7 @@ export default function AppLayout() {
       <Stack.Screen name="login" />
       <Stack.Screen name="register" />
       <Stack.Screen name="otp" />
-      <Stack.Screen name="cart" />
+      {/* <Stack.Screen name="cart" /> */}
       <Stack.Screen
         name="food/[id]"
         options={{

@@ -18,6 +18,8 @@ export default function Login() {
 
   const isValid = form.email.includes("@") && form.password.length >= 6;
 
+
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}

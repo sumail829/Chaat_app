@@ -45,14 +45,24 @@ export default function Register() {
     }
 
     try {
-      const response = await api.post("/users", {
-        name,
-        email,
-        phone,
-        password,
-      });
-      console.log(response);
-      router.push({ pathname: "/(app)/otp", params: { phone } });
+     const response = await api.post("/users", {
+  name,
+  email,
+  phone,
+  password,
+  Confirmpassword: confirmPassword,
+  role: "user",
+});
+
+const data = await response.json();
+console.log("response data:", data);  // ← this will show exact validation error
+
+if (!response.ok) {
+  setError(data.message || "Registration failed");
+  return;
+}
+
+router.push({ pathname: "/(app)/otp", params: { phone } });
     } catch (err: any) {
   console.log("ERROR DETAILS:", err?.message, err);
   setError(err?.message || "An unexpected error occurred.");
