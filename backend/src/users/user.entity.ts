@@ -19,6 +19,7 @@ export class User {
   @Column({ nullable: true })
   phone?: string;
 
+
   @Column({
     type: 'enum',
     enum: UserRole,

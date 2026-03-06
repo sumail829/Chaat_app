@@ -16,7 +16,7 @@ import { Roles } from 'src/auth/roles.decorator';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/roles.guard';
 
-@UseGuards(JwtAuthGuard, RolesGuard)
+
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
@@ -25,7 +25,7 @@ export class UsersController {
   create(@Body() dto: CreateUserDto) {
     return this.usersService.create(dto);
   }
-
+@UseGuards(JwtAuthGuard, RolesGuard)
  @Get()
   @Roles(UserRole.ADMIN)
   findAll() {

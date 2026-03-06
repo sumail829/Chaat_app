@@ -15,6 +15,9 @@ export class CreateUserDto {
   @IsNotEmpty()
   password: string;
 
+  @IsNotEmpty()
+  Confirmpassword: string;
+
   @IsEnum(UserRole, { message: 'Role must be admin, user, or moderator' })
   role: UserRole; // 👈 role is included here
 

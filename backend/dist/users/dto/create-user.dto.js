@@ -21,6 +21,7 @@ class CreateUserDto {
     email;
     name;
     password;
+    Confirmpassword;
     role;
     phone;
     isActive;
@@ -40,6 +41,10 @@ __decorate([
     (0, class_validator_1.IsNotEmpty)(),
     __metadata("design:type", String)
 ], CreateUserDto.prototype, "password", void 0);
+__decorate([
+    (0, class_validator_1.IsNotEmpty)(),
+    __metadata("design:type", String)
+], CreateUserDto.prototype, "Confirmpassword", void 0);
 __decorate([
     (0, class_validator_1.IsEnum)(UserRole, { message: 'Role must be admin, user, or moderator' }),
     __metadata("design:type", String)

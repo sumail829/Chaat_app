@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
@@ -15,13 +15,17 @@ export class UsersService {
 
   // CREATE USER
   async create(dto: CreateUserDto) {
+
+      if (dto.password !== dto.Confirmpassword) {
+      throw new BadRequestException('Passwords do not match');
+    }
     const hashedPassword = await bcrypt.hash(dto.password, 10);
 
     const user = this.userRepo.create({
       ...dto,
       password: hashedPassword,
       phone: dto.phone,
-      isActive: dto.isActive,
+      isActive: dto.isActive?? true,
       role: dto.role ?? UserRole.USER,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -71,3 +75,4 @@ export class UsersService {
     return this.userRepo.remove(user);
   }
 }
+//nszw rsql glhq fszw

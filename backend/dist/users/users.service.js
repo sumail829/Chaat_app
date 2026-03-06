@@ -58,12 +58,15 @@ let UsersService = class UsersService {
         this.userRepo = userRepo;
     }
     async create(dto) {
+        if (dto.password !== dto.Confirmpassword) {
+            throw new common_1.BadRequestException('Passwords do not match');
+        }
         const hashedPassword = await bcrypt.hash(dto.password, 10);
         const user = this.userRepo.create({
             ...dto,
             password: hashedPassword,
             phone: dto.phone,
-            isActive: dto.isActive,
+            isActive: dto.isActive ?? true,
             role: dto.role ?? create_user_dto_1.UserRole.USER,
             createdAt: new Date(),
             updatedAt: new Date(),
