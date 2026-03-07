@@ -25,49 +25,42 @@ export default function Register() {
     confirmPassword: "",
   });
 
- const isValid =
-  form.name.trim().length >= 2 &&
-  form.phone.length === 10 &&
-  form.email.includes("@") &&
-  form.password.length >= 6 &&
-  form.password === form.confirmPassword;  
-  const handleSubmit = async () => {
-    setError("");
-    const { name, email, phone, password, confirmPassword } = form;
+  const isValid =
+    form.name.trim().length >= 2 &&
+    form.phone.length === 10 &&
+    form.email.includes("@") &&
+    form.password.length >= 6 &&
+    form.password === form.confirmPassword;
+ const handleSubmit = async () => {
+  setError("");
+  const { name, email, phone, password, confirmPassword } = form;
 
-    if (!name || !email || !phone || !password || !confirmPassword) {
-      setError("Please fill in all fields");
+  if (!name || !email || !phone || !password || !confirmPassword) {
+    setError("Please fill in all fields");
+    return;
+  }
+  if (password !== confirmPassword) {
+    setError("Passwords don't match");
+    return;
+  }
+
+  try {
+    // Only send OTP — don't create user yet
+    const res = await api.post("/otp/send/email", { email });
+    if (!res.ok) {
+      setError("Failed to send OTP. Please try again.");
       return;
     }
-    if (password !== confirmPassword) {
-      setError("Passwords don't match");
-      return;
-    }
 
-    try {
-     const response = await api.post("/users", {
-  name,
-  email,
-  phone,
-  password,
-  Confirmpassword: confirmPassword,
-  role: "user",
-});
-
-const data = await response.json();
-console.log("response data:", data);  // ← this will show exact validation error
-
-if (!response.ok) {
-  setError(data.message || "Registration failed");
-  return;
-}
-
-router.push({ pathname: "/(app)/otp", params: { phone } });
-    } catch (err: any) {
-  console.log("ERROR DETAILS:", err?.message, err);
-  setError(err?.message || "An unexpected error occurred.");
-}
-  };
+    // Pass form data to OTP screen
+    router.push({
+      pathname: "/(app)/otp",
+      params: { email, phone, name, password },
+    });
+  } catch (err) {
+    setError("Something went wrong. Please try again.");
+  }
+};
 
   return (
     <KeyboardAvoidingView
@@ -103,11 +96,10 @@ router.push({ pathname: "/(app)/otp", params: { phone } });
           {/* Full Name */}
           <Text className="text-gray-600 font-semibold mb-2">Full Name</Text>
           <View
-            className={`flex-row items-center border rounded-xl px-4 py-3 mb-4 ${
-              focused === "name"
+            className={`flex-row items-center border rounded-xl px-4 py-3 mb-4 ${focused === "name"
                 ? "border-orange-500 bg-orange-50"
                 : "border-gray-200 bg-gray-50"
-            }`}
+              }`}
           >
             <Text className="text-gray-400 mr-2">👤</Text>
             <TextInput
@@ -125,11 +117,10 @@ router.push({ pathname: "/(app)/otp", params: { phone } });
           {/* Email */}
           <Text className="text-gray-600 font-semibold mb-2">Email Address</Text>
           <View
-            className={`flex-row items-center border rounded-xl px-4 py-3 mb-4 ${
-              focused === "email"
+            className={`flex-row items-center border rounded-xl px-4 py-3 mb-4 ${focused === "email"
                 ? "border-orange-500 bg-orange-50"
                 : "border-gray-200 bg-gray-50"
-            }`}
+              }`}
           >
             <Text className="text-gray-400 mr-2">✉️</Text>
             <TextInput
@@ -148,11 +139,10 @@ router.push({ pathname: "/(app)/otp", params: { phone } });
           {/* Phone */}
           <Text className="text-gray-600 font-semibold mb-2">Mobile Number</Text>
           <View
-            className={`flex-row items-center border rounded-xl px-4 py-3 mb-4 ${
-              focused === "phone"
+            className={`flex-row items-center border rounded-xl px-4 py-3 mb-4 ${focused === "phone"
                 ? "border-orange-500 bg-orange-50"
                 : "border-gray-200 bg-gray-50"
-            }`}
+              }`}
           >
             <Text className="text-gray-500 mr-2 text-base">  +977</Text>
             <TextInput
@@ -171,11 +161,10 @@ router.push({ pathname: "/(app)/otp", params: { phone } });
           {/* Password */}
           <Text className="text-gray-600 font-semibold mb-2">Password</Text>
           <View
-            className={`flex-row items-center border rounded-xl px-4 py-3 mb-4 ${
-              focused === "password"
+            className={`flex-row items-center border rounded-xl px-4 py-3 mb-4 ${focused === "password"
                 ? "border-orange-500 bg-orange-50"
                 : "border-gray-200 bg-gray-50"
-            }`}
+              }`}
           >
             <Text className="text-gray-400 mr-2">🔒</Text>
             <TextInput
@@ -198,13 +187,12 @@ router.push({ pathname: "/(app)/otp", params: { phone } });
           {/* Confirm Password */}
           <Text className="text-gray-600 font-semibold mb-2">Confirm Password</Text>
           <View
-            className={`flex-row items-center border rounded-xl px-4 py-3 mb-1 ${
-              focused === "confirmPassword"
+            className={`flex-row items-center border rounded-xl px-4 py-3 mb-1 ${focused === "confirmPassword"
                 ? "border-orange-500 bg-orange-50"
                 : form.confirmPassword && form.password !== form.confirmPassword
-                ? "border-red-400 bg-red-50"
-                : "border-gray-200 bg-gray-50"
-            }`}
+                  ? "border-red-400 bg-red-50"
+                  : "border-gray-200 bg-gray-50"
+              }`}
           >
             <Text className="text-gray-400 mr-2">🔒</Text>
             <TextInput
@@ -233,9 +221,8 @@ router.push({ pathname: "/(app)/otp", params: { phone } });
 
           {/* Submit */}
           <TouchableOpacity
-            className={`rounded-2xl py-4 items-center mt-6 mb-4 ${
-              isValid ? "bg-orange-500" : "bg-orange-200"
-            }`}
+            className={`rounded-2xl py-4 items-center mt-6 mb-4 ${isValid ? "bg-orange-500" : "bg-orange-200"
+              }`}
             disabled={!isValid}
             onPress={handleSubmit}
           >
