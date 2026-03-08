@@ -47,7 +47,8 @@ export default function OtpScreen() {
 
   const handleVerify = async () => {
     const code = otp.join("");
-    console.log("Verifying OTP:", { email, code });
+    console.log("Verifying OTP:", { email, code }); // ← add this
+  
     if (code.length < 4) {
       setError("Please enter the 4-digit OTP");
       return;
@@ -60,7 +61,7 @@ export default function OtpScreen() {
       // Step 1: Verify OTP
       const verifyRes = await api.post("/otp/verify", { key: email, code });
       const verifyData = await verifyRes.json();
-       console.log("Verify response:", verifyData);
+         console.log("Verify response:", verifyData); // ← add this
       if (!verifyRes.ok) {
         setError(verifyData.message || "Invalid OTP");
         setLoading(false);

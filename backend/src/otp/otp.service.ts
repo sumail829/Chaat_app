@@ -39,9 +39,8 @@ export class OtpService {
   async sendOtpToEmail(email: string): Promise<{ message: string }> {
     const code = this.generateCode();
     this.saveOtp(email, code);
-     console.log(`OTP for ${email}: ${code}`); // ← see OTP in docker logs
+      console.log(`OTP for ${email}: ${code}`); // ← see OTP in docker logs
   console.log('Store size:', this.otpStore.size); // ← confirm it's saved
-
     await this.transporter.sendMail({
       from: `"Chaat House" <${this.configService.get('MAIL_USER')}>`,
       to: email,
@@ -61,7 +60,7 @@ export class OtpService {
 
   verifyOtp(key: string, code: string): boolean {
      console.log('Verifying:', { key, code });
-  console.log('Store:', JSON.stringify([...this.otpStore.entries()]));
+  console.log('Store:', JSON.stringify([...this.otpStore.entries()])); // ← see what's in store
     const record = this.otpStore.get(key);
 
     if (!record) throw new BadRequestException('OTP not found. Please request again.');

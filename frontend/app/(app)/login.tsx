@@ -6,19 +6,54 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  ActivityIndicator,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useState } from "react";
+import { api } from "@/services/api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Login() {
   const router = useRouter();
   const [focused, setFocused] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [form, setForm] = useState({ email: "", password: "" });
 
   const isValid = form.email.includes("@") && form.password.length >= 6;
 
+  const handleLogin = async () => {
+    setError("");
+    setLoading(true);
 
+    try {
+      const res = await api.post("/auth/login", {
+        email: form.email,
+        password: form.password,
+      });
+
+      const data = await res.json();
+      console.log("Login response:", data);
+
+      if (!res.ok) {
+        setError(data.message || "Invalid email or password");
+        return;
+      }
+
+      // Save JWT token
+      await AsyncStorage.setItem("access_token", data.access_token);
+
+      // Go to home
+      router.replace("/(tabs)/home");
+
+    } catch (err) {
+      console.log("Login error:", err);
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <KeyboardAvoidingView
@@ -36,6 +71,13 @@ export default function Login() {
         <View className="flex-1 px-6 pt-10">
           <Text className="text-gray-800 text-2xl font-bold mb-1">Welcome back! 👋</Text>
           <Text className="text-gray-400 text-sm mb-8">Sign in to your account</Text>
+
+          {/* Error */}
+          {error ? (
+            <View className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 mb-4">
+              <Text className="text-red-500 text-sm">{error}</Text>
+            </View>
+          ) : null}
 
           {/* Email */}
           <Text className="text-gray-600 font-semibold mb-2">Email Address</Text>
@@ -95,12 +137,16 @@ export default function Login() {
           {/* Sign In */}
           <TouchableOpacity
             className={`rounded-2xl py-4 items-center mb-4 ${
-              isValid ? "bg-orange-500" : "bg-orange-200"
+              isValid && !loading ? "bg-orange-500" : "bg-orange-200"
             }`}
-            disabled={!isValid}
-            onPress={() => router.replace("/(tabs)/home")}
+            disabled={!isValid || loading}
+            onPress={handleLogin}
           >
-            <Text className="text-white font-bold text-lg">Sign In</Text>
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text className="text-white font-bold text-lg">Sign In</Text>
+            )}
           </TouchableOpacity>
 
           {/* Register link */}
