@@ -1,4 +1,3 @@
-
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -21,25 +20,24 @@ export class Order {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  // @ManyToOne(() => User, (user) => user.orders)
-  // user: User;
- 
   @ManyToOne(() => User, (user) => user.orders, { nullable: false })
-user: User;
+  user: User;
 
-@ManyToOne(() => RestaurantTable)
-@JoinColumn({ name: 'tableId' })
-table: RestaurantTable;
+  @ManyToOne(() => RestaurantTable)
+  @JoinColumn({ name: 'tableId' })
+  table: RestaurantTable;
 
-@Column()
-tableId: string;
+  @Column()
+  tableId: string;
+
+  // Links order to dining session
+  @Column({ nullable: true })
+  sessionToken?: string;
 
   @OneToOne(() => Payment, (payment) => payment.order, { cascade: true })
   payment: Payment;
 
-  @OneToMany(() => OrderItem, (item) => item.order, {
-    cascade: true,
-  })
+  @OneToMany(() => OrderItem, (item) => item.order, { cascade: true })
   items: OrderItem[];
 
   @Column({
@@ -50,16 +48,16 @@ tableId: string;
   status: OrderStatus;
 
   @Column({
-  type: 'decimal',
-  precision: 10,
-  scale: 2,
-  default: 0,
-  transformer: {
-    to: (value: number) => value,
-    from: (value: string) => parseFloat(value),
-  },
-})
-totalAmount: number;
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 0,
+    transformer: {
+      to: (value: number) => value,
+      from: (value: string) => parseFloat(value),
+    },
+  })
+  totalAmount: number;
 
   @CreateDateColumn()
   createdAt: Date;

@@ -19,7 +19,7 @@ services:
     image: postgres:16
     container_name: postgres_db1
     environment:
-      POSTGRES_USER: ${DB_USER}
+      POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: chaatapp
     ports:

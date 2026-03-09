@@ -18,6 +18,7 @@ const table_module_1 = require("./restaurant-table/table.module");
 const orders_module_1 = require("./orders/orders.module");
 const payment_module_1 = require("./payments/payment.module");
 const otp_module_1 = require("./otp/otp.module");
+const dining_session_module_1 = require("./dining-session/dining-session.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -53,6 +54,7 @@ exports.AppModule = AppModule = __decorate([
             menu_module_1.MenuModule,
             auth_module_1.AuthModule,
             otp_module_1.OtpModule,
+            dining_session_module_1.DiningSessionModule,
         ],
     })
 ], AppModule);

@@ -1,31 +1,34 @@
-import { Entity, PrimaryColumn, Column, UpdateDateColumn, CreateDateColumn, PrimaryGeneratedColumn } from "typeorm";
+import { Entity, Column, UpdateDateColumn, CreateDateColumn, PrimaryGeneratedColumn } from "typeorm";
 import { TableStatus } from "./table-status.enum";
 
 @Entity('restaurant_tables')
 export class RestaurantTable {
-    @PrimaryGeneratedColumn('uuid')
-    id: string;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
-    @Column({ unique: true })
-    tableNumber: string;
+  @Column({ unique: true })
+  tableNumber: string;
 
+  @Column({
+    type: 'enum',
+    enum: TableStatus,
+    default: TableStatus.AVAILABLE,
+  })
+  status: TableStatus;
 
-    @Column({
-        type: 'enum',
-        enum: TableStatus,
-        default: TableStatus.AVAILABLE,
-    })
-    status: TableStatus;
+  @Column('int')
+  capacity: number;
 
-    @Column('int')
-    capacity: number;
+  @Column({ default: true })
+  isActive: boolean;
 
-    @Column({ default: true })
-    isActive: boolean;
+  // QR code stores the URL: https://chaathouse.app/scan?table=<id>
+  @Column({ nullable: true })
+  qrCode?: string;
 
-    @CreateDateColumn()
-    createdAt: Date;
+  @CreateDateColumn()
+  createdAt: Date;
 
-    @UpdateDateColumn()
-    updatedAt: Date;
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

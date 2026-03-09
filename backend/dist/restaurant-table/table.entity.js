@@ -18,6 +18,7 @@ let RestaurantTable = class RestaurantTable {
     status;
     capacity;
     isActive;
+    qrCode;
     createdAt;
     updatedAt;
 };
@@ -46,6 +47,10 @@ __decorate([
     (0, typeorm_1.Column)({ default: true }),
     __metadata("design:type", Boolean)
 ], RestaurantTable.prototype, "isActive", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], RestaurantTable.prototype, "qrCode", void 0);
 __decorate([
     (0, typeorm_1.CreateDateColumn)(),
     __metadata("design:type", Date)

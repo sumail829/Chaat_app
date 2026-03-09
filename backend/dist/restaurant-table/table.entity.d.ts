@@ -5,6 +5,7 @@ export declare class RestaurantTable {
     status: TableStatus;
     capacity: number;
     isActive: boolean;
+    qrCode?: string;
     createdAt: Date;
     updatedAt: Date;
 }

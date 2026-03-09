@@ -21,6 +21,7 @@ let Order = class Order {
     user;
     table;
     tableId;
+    sessionToken;
     payment;
     items;
     status;
@@ -47,13 +48,15 @@ __decorate([
     __metadata("design:type", String)
 ], Order.prototype, "tableId", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], Order.prototype, "sessionToken", void 0);
+__decorate([
     (0, typeorm_1.OneToOne)(() => payment_entity_1.Payment, (payment) => payment.order, { cascade: true }),
     __metadata("design:type", payment_entity_1.Payment)
 ], Order.prototype, "payment", void 0);
 __decorate([
-    (0, typeorm_1.OneToMany)(() => order_item_entity_1.OrderItem, (item) => item.order, {
-        cascade: true,
-    }),
+    (0, typeorm_1.OneToMany)(() => order_item_entity_1.OrderItem, (item) => item.order, { cascade: true }),
     __metadata("design:type", Array)
 ], Order.prototype, "items", void 0);
 __decorate([

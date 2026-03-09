@@ -9,6 +9,7 @@ import { TableModule } from './restaurant-table/table.module';
 import { OrdersModule } from './orders/orders.module';
 import { PaymentModule } from './payments/payment.module';
 import { OtpModule } from './otp/otp.module';
+import { DiningSessionModule } from './dining-session/dining-session.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { OtpModule } from './otp/otp.module';
     MenuModule,
     AuthModule,
     OtpModule,
+    DiningSessionModule,
   ],
 })
 export class AppModule {}

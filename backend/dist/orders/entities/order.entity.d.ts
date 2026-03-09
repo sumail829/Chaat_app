@@ -8,6 +8,7 @@ export declare class Order {
     user: User;
     table: RestaurantTable;
     tableId: string;
+    sessionToken?: string;
     payment: Payment;
     items: OrderItem[];
     status: OrderStatus;
