@@ -111,7 +111,11 @@ export class DiningSessionService {
   // PATCH /session/end — bill paid
   async endSession(sessionToken: string) {
     const session = await this.sessionRepo.findOne({
-      where: { sessionToken, status: SessionStatus.ACTIVE },
+      where:[
+      { sessionToken, status: SessionStatus.ACTIVE },
+      { sessionToken, status: SessionStatus.PENDING },
+    ],
+      
       relations: ['table'],
     });
 

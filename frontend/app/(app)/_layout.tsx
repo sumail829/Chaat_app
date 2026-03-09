@@ -6,6 +6,7 @@ export default function AppLayout() {
       <Stack.Screen name="login" />
       <Stack.Screen name="register" />
       <Stack.Screen name="otp" />
+      <Stack.Screen name="scan" />
       {/* <Stack.Screen name="cart" /> */}
       <Stack.Screen
         name="food/[id]"

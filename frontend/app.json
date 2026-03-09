@@ -6,6 +6,11 @@
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "frontend",
+    "extra": {
+      "router": {
+        "origin": "http://192.168.1.85:8081"
+      }
+    },
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
