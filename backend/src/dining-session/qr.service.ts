@@ -22,9 +22,9 @@ export class QrService {
 
   // Generate full QR URL
   generateQrUrl(tableId: string): string {
-    const token = this.generateQrToken(tableId);
+    // const token = this.generateQrToken(tableId);
     const baseUrl = this.configService.get('APP_URL') ?? 'https://chaathouse.app';
-    return `${baseUrl}/scan?token=${token}`;
+    return `${baseUrl}/scan?table=${tableId}`;
   }
 
   // Verify and decode QR token

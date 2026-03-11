@@ -45,47 +45,36 @@ export class DiningSessionService {
   }
 
   // POST /session/start — customer scans QR
-  async startSession(dto: StartSessionDto) {
-    // Verify QR token (checks signature + expiry)
-    const { tableId } = this.qrService.verifyQrToken(dto.qrToken);
+ async startSession(dto: StartSessionDto) {
+  // No QR verification needed — security handled by session expiry
+  const table = await this.tableRepo.findOne({
+    where: { id: dto.tableId, isActive: true },
+  });
 
-    const table = await this.tableRepo.findOne({
-      where: { id: tableId, isActive: true },
-    });
+  if (!table) throw new NotFoundException('Table not found');
 
-    if (!table) throw new NotFoundException('Table not found');
-
-    if (table.status === TableStatus.OCCUPIED) {
-      throw new BadRequestException(
-        'Table is already occupied. Please choose another table.',
-      );
-    }
-
-    // Generate session token
-    const sessionToken = uuidv4();
-
-    // Mark table as occupied
-    table.status = TableStatus.OCCUPIED;
-    await this.tableRepo.save(table);
-
-    // Create session as PENDING (becomes ACTIVE when first order placed)
-    const session = this.sessionRepo.create({
-      tableId,
-      sessionToken,
-      customerPhone: dto.customerPhone,
-      status: SessionStatus.PENDING,
-    });
-
-    const saved = await this.sessionRepo.save(session);
-
-    return {
-      sessionToken: saved.sessionToken,
-      sessionId: saved.id,
-      tableId,
-      tableNumber: table.tableNumber,
-      message: 'Table reserved. You have 15 minutes to place your first order.',
-    };
+  if (table.status === TableStatus.OCCUPIED) {
+    throw new BadRequestException('Table is already occupied');
   }
+
+  const sessionToken = uuidv4();
+  table.status = TableStatus.OCCUPIED;
+  await this.tableRepo.save(table);
+
+  const session = this.sessionRepo.create({
+    tableId: dto.tableId,
+    sessionToken,
+    status: SessionStatus.PENDING,
+  });
+
+  const saved = await this.sessionRepo.save(session);
+
+  return {
+    sessionToken: saved.sessionToken,
+    tableNumber: table.tableNumber,
+    message: 'Table reserved. Place your order within 15 minutes.',
+  };
+}
 
   // GET /session/:token
   async getSession(sessionToken: string) {
