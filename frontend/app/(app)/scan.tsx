@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { View, Text, ActivityIndicator, TouchableOpacity } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { api } from "@/services/api";
+import { useCartStore } from "@/store/cartStore";
 
 export default function ScanScreen() {
   const router = useRouter();
@@ -9,7 +10,7 @@ export default function ScanScreen() {
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
   const [sessionData, setSessionData] = useState<any>(null);
   const [errorMsg, setErrorMsg] = useState("");
-
+const { setSession } = useCartStore();
   useEffect(() => {
     if (table) handleScan();
   }, [table]);
@@ -27,8 +28,11 @@ export default function ScanScreen() {
         return;
       }
 
-      setSessionData(data);
+            setSession(data.sessionToken, data.tableNumber);
+    setSessionData(data);
+
       setStatus("success");
+    
 
     } catch (err: any) {
       console.log("Scan error:", err);
@@ -79,20 +83,12 @@ export default function ScanScreen() {
       <Text className="text-gray-400 text-xs text-center mb-8">
         Session: {sessionData?.sessionToken?.substring(0, 8)}...
       </Text>
-      <TouchableOpacity
-        className="bg-orange-500 rounded-2xl py-4 px-12 w-full items-center"
-        onPress={() =>
-          router.replace({
-            pathname: "/(tabs)/menu",
-            params: {
-              sessionToken: sessionData?.sessionToken,
-              tableNumber: sessionData?.tableNumber,
-            },
-          })
-        }
-      >
-        <Text className="text-white font-bold text-lg">View Menu 🍽️</Text>
-      </TouchableOpacity>
+    <TouchableOpacity
+  className="bg-orange-500 rounded-2xl py-4 px-12 w-full items-center"
+  onPress={() => router.replace("/(tabs)/menu")} // ← navigate on button press
+>
+  <Text className="text-white font-bold text-lg">View Menu 🍽️</Text>
+</TouchableOpacity>
     </View>
   );
 }
