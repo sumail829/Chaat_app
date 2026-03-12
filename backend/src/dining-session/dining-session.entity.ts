@@ -41,6 +41,9 @@ export class DiningSession {
   @Column({ nullable: true })
   customerPhone?: string;
 
+  @Column({ default: 1 })
+numberOfPeople: number;
+
   @CreateDateColumn()
   startTime: Date;
 

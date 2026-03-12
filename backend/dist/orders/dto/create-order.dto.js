@@ -12,11 +12,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CreateOrderDto = void 0;
 const class_validator_1 = require("class-validator");
 class CreateOrderDto {
-    tableId;
+    sessionToken;
 }
 exports.CreateOrderDto = CreateOrderDto;
 __decorate([
-    (0, class_validator_1.IsUUID)(),
+    (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
-], CreateOrderDto.prototype, "tableId", void 0);
+], CreateOrderDto.prototype, "sessionToken", void 0);
 //# sourceMappingURL=create-order.dto.js.map

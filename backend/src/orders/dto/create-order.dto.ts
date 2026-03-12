@@ -1,8 +1,6 @@
-
-
-import { IsUUID } from 'class-validator';
+import { IsString } from 'class-validator';
 
 export class CreateOrderDto {
-  @IsUUID()
-  tableId: string;
+  @IsString()
+  sessionToken: string; // ← changed from tableId to sessionToken
 }

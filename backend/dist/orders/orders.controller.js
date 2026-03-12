@@ -16,7 +16,6 @@ exports.OrdersController = void 0;
 const common_1 = require("@nestjs/common");
 const orders_service_1 = require("./orders.service");
 const create_order_dto_1 = require("./dto/create-order.dto");
-const add_order_item_dto_1 = require("./dto/add-order-item.dto");
 const passport_1 = require("@nestjs/passport");
 let OrdersController = class OrdersController {
     ordersService;
@@ -24,13 +23,10 @@ let OrdersController = class OrdersController {
         this.ordersService = ordersService;
     }
     createOrder(req, dto) {
-        return this.ordersService.createOrder(req.user.userId, dto.tableId);
+        return this.ordersService.createOrder(req.user, dto.sessionToken);
     }
-    addItem(orderId, dto) {
-        return this.ordersService.addItems(orderId, dto);
-    }
-    findAll() {
-        return this.ordersService.findAllorders();
+    getOrdersBySession(sessionToken) {
+        return this.ordersService.findOrdersBySession(sessionToken);
     }
 };
 exports.OrdersController = OrdersController;
@@ -44,19 +40,12 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "createOrder", null);
 __decorate([
-    (0, common_1.Post)(':orderId/items'),
-    __param(0, (0, common_1.Param)('orderId')),
-    __param(1, (0, common_1.Body)()),
+    (0, common_1.Get)('session/:sessionToken'),
+    __param(0, (0, common_1.Param)('sessionToken')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, add_order_item_dto_1.AddOrderItemsDto]),
+    __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
-], OrdersController.prototype, "addItem", null);
-__decorate([
-    (0, common_1.Get)(),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
-    __metadata("design:returntype", void 0)
-], OrdersController.prototype, "findAll", null);
+], OrdersController.prototype, "getOrdersBySession", null);
 exports.OrdersController = OrdersController = __decorate([
     (0, common_1.Controller)('orders'),
     __metadata("design:paramtypes", [orders_service_1.OrdersService])

@@ -20,39 +20,50 @@ const typeorm_2 = require("typeorm");
 const order_item_entity_1 = require("./entities/order-item.entity");
 const table_entity_1 = require("../restaurant-table/table.entity");
 const menu_entity_1 = require("../menu/menu.entity");
-const table_status_enum_1 = require("../restaurant-table/table-status.enum");
 const payment_entity_1 = require("../payments/entities/payment.entity");
 const payment_status_enum_1 = require("../payments/payment-enum/payment-status.enum");
 const order_status_enum_1 = require("./order-status.enum");
+const dining_session_entity_1 = require("../dining-session/dining-session.entity");
 let OrdersService = class OrdersService {
     orderRepo;
     orderItemRepo;
     tableRepo;
     menuRepo;
     paymentRepo;
-    constructor(orderRepo, orderItemRepo, tableRepo, menuRepo, paymentRepo) {
+    sessionRepo;
+    constructor(orderRepo, orderItemRepo, tableRepo, menuRepo, paymentRepo, sessionRepo) {
         this.orderRepo = orderRepo;
         this.orderItemRepo = orderItemRepo;
         this.tableRepo = tableRepo;
         this.menuRepo = menuRepo;
         this.paymentRepo = paymentRepo;
+        this.sessionRepo = sessionRepo;
     }
-    async createOrder(user, tableId) {
-        const table = await this.tableRepo.findOne({
-            where: { id: tableId, status: table_status_enum_1.TableStatus.AVAILABLE },
+    async createOrder(user, sessionToken) {
+        const session = await this.sessionRepo.findOne({
+            where: [
+                { sessionToken, status: dining_session_entity_1.SessionStatus.ACTIVE },
+                { sessionToken, status: dining_session_entity_1.SessionStatus.PENDING },
+            ],
+            relations: ['table'],
         });
-        if (!table) {
-            throw new common_1.BadRequestException('Table not available');
+        if (!session) {
+            throw new common_1.NotFoundException('Session not found or expired. Please scan QR again.');
         }
-        table.status = table_status_enum_1.TableStatus.OCCUPIED;
-        await this.tableRepo.save(table);
+        const table = session.table;
         const order = this.orderRepo.create({
             user,
             table,
+            tableId: table.id,
+            sessionToken,
             totalAmount: 0,
             status: order_status_enum_1.OrderStatus.PENDING,
         });
         const savedOrder = await this.orderRepo.save(order);
+        if (session.status === dining_session_entity_1.SessionStatus.PENDING) {
+            session.status = dining_session_entity_1.SessionStatus.ACTIVE;
+            await this.sessionRepo.save(session);
+        }
         return savedOrder;
     }
     async addItems(orderId, dto) {
@@ -60,9 +71,8 @@ let OrdersService = class OrdersService {
             where: { id: orderId },
             relations: ['items', 'payment'],
         });
-        if (!order) {
+        if (!order)
             throw new common_1.NotFoundException('Order not found');
-        }
         let totalToAdd = 0;
         const orderItems = [];
         for (const entry of dto.items) {
@@ -107,7 +117,15 @@ let OrdersService = class OrdersService {
         };
     }
     async findAllorders() {
-        return this.orderRepo.find({ relations: ['items', 'payment', 'table', 'user'] });
+        return this.orderRepo.find({
+            relations: ['items', 'payment', 'table', 'user'],
+        });
+    }
+    async findOrdersBySession(sessionToken) {
+        return this.orderRepo.find({
+            where: { sessionToken },
+            relations: ['items', 'items.menu', 'payment'],
+        });
     }
 };
 exports.OrdersService = OrdersService;
@@ -118,7 +136,9 @@ exports.OrdersService = OrdersService = __decorate([
     __param(2, (0, typeorm_1.InjectRepository)(table_entity_1.RestaurantTable)),
     __param(3, (0, typeorm_1.InjectRepository)(menu_entity_1.Menu)),
     __param(4, (0, typeorm_1.InjectRepository)(payment_entity_1.Payment)),
+    __param(5, (0, typeorm_1.InjectRepository)(dining_session_entity_1.DiningSession)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
+        typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,

@@ -9,23 +9,15 @@ export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
   
- @UseGuards(AuthGuard('jwt'))
+@UseGuards(AuthGuard('jwt'))
 @Post()
 createOrder(@Req() req, @Body() dto: CreateOrderDto) {
-  return this.ordersService.createOrder(req.user.userId, dto.tableId);
+  return this.ordersService.createOrder(req.user, dto.sessionToken);
 }
 
-  @Post(':orderId/items')
-  addItem(
-    @Param('orderId') orderId: string,
-    @Body() dto: AddOrderItemsDto,
-  ) {
-    return this.ordersService.addItems(orderId, dto);
-  }
-
-  @Get()
-  findAll(){
-    return this.ordersService.findAllorders()
-  }
-
+// Add new endpoint to get orders by session
+@Get('session/:sessionToken')
+getOrdersBySession(@Param('sessionToken') sessionToken: string) {
+  return this.ordersService.findOrdersBySession(sessionToken);
+}
 }

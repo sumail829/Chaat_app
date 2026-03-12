@@ -19,6 +19,9 @@ export class RestaurantTable {
   @Column('int')
   capacity: number;
 
+  @Column({ default: 0 })
+  currentOccupancy: number;
+
   @Column({ default: true })
   isActive: boolean;
 

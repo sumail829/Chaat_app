@@ -1,3 +1,3 @@
 export declare class CreateOrderDto {
-    tableId: string;
+    sessionToken: string;
 }

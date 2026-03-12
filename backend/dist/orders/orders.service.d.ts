@@ -7,14 +7,16 @@ import { User } from "src/users/user.entity";
 import { AddOrderItemsDto } from "./dto/add-order-item.dto";
 import { Payment } from "src/payments/entities/payment.entity";
 import { PaymentStatus } from "src/payments/payment-enum/payment-status.enum";
+import { DiningSession } from "src/dining-session/dining-session.entity";
 export declare class OrdersService {
     private orderRepo;
     private orderItemRepo;
     private tableRepo;
     private menuRepo;
     private paymentRepo;
-    constructor(orderRepo: Repository<Order>, orderItemRepo: Repository<OrderItem>, tableRepo: Repository<RestaurantTable>, menuRepo: Repository<Menu>, paymentRepo: Repository<Payment>);
-    createOrder(user: User, tableId: string): Promise<Order>;
+    private sessionRepo;
+    constructor(orderRepo: Repository<Order>, orderItemRepo: Repository<OrderItem>, tableRepo: Repository<RestaurantTable>, menuRepo: Repository<Menu>, paymentRepo: Repository<Payment>, sessionRepo: Repository<DiningSession>);
+    createOrder(user: User, sessionToken: string): Promise<Order>;
     addItems(orderId: string, dto: AddOrderItemsDto): Promise<{
         message: string;
         addedItems: OrderItem[];
@@ -23,4 +25,5 @@ export declare class OrdersService {
         paymentStatus: PaymentStatus;
     }>;
     findAllorders(): Promise<Order[]>;
+    findOrdersBySession(sessionToken: string): Promise<Order[]>;
 }
