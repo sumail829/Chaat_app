@@ -45,25 +45,46 @@ export class DiningSessionService {
   }
 
   // POST /session/start — customer scans QR
- async startSession(dto: StartSessionDto) {
-  // No QR verification needed — security handled by session expiry
+async startSession(dto: StartSessionDto) {
   const table = await this.tableRepo.findOne({
     where: { id: dto.tableId, isActive: true },
   });
 
   if (!table) throw new NotFoundException('Table not found');
 
-  if (table.status === TableStatus.OCCUPIED) {
-    throw new BadRequestException('Table is already occupied');
+  const peopleJoining = dto.numberOfPeople ?? 1;
+
+  // Check if table has enough space
+  const remainingCapacity = table.capacity - table.currentOccupancy;
+  if (remainingCapacity < 1) {
+    throw new BadRequestException(
+      `Table is full (${table.currentOccupancy}/${table.capacity})`,
+    );
   }
 
-  const sessionToken = uuidv4();
-  table.status = TableStatus.OCCUPIED;
+  if (peopleJoining > remainingCapacity) {
+    throw new BadRequestException(
+      `Only ${remainingCapacity} seat(s) left at this table`,
+    );
+  }
+
+  // Update occupancy
+  table.currentOccupancy += peopleJoining;
+
+  // Mark OCCUPIED only when full, otherwise PARTIALLY_OCCUPIED
+  if (table.currentOccupancy >= table.capacity) {
+    table.status = TableStatus.OCCUPIED;
+  } else {
+    table.status = TableStatus.PARTIALLY_OCCUPIED;
+  }
+
   await this.tableRepo.save(table);
 
+  const sessionToken = uuidv4();
   const session = this.sessionRepo.create({
     tableId: dto.tableId,
     sessionToken,
+    numberOfPeople: peopleJoining,
     status: SessionStatus.PENDING,
   });
 
@@ -72,7 +93,10 @@ export class DiningSessionService {
   return {
     sessionToken: saved.sessionToken,
     tableNumber: table.tableNumber,
-    message: 'Table reserved. Place your order within 15 minutes.',
+    currentOccupancy: table.currentOccupancy,
+    capacity: table.capacity,
+    remainingSeats: table.capacity - table.currentOccupancy,
+    message: `Seated ${peopleJoining} people. ${table.capacity - table.currentOccupancy} seats remaining.`,
   };
 }
 
@@ -98,31 +122,49 @@ export class DiningSessionService {
   }
 
   // PATCH /session/end — bill paid
-  async endSession(sessionToken: string) {
-    const session = await this.sessionRepo.findOne({
-      where:[
+ async endSession(sessionToken: string) {
+  const session = await this.sessionRepo.findOne({
+    where: [
       { sessionToken, status: SessionStatus.ACTIVE },
       { sessionToken, status: SessionStatus.PENDING },
     ],
-      
-      relations: ['table'],
-    });
+    relations: ['table'],
+  });
 
-    if (!session) throw new NotFoundException('Active session not found');
+  if (!session) throw new NotFoundException('Session not found');
 
-    session.status = SessionStatus.CLOSED;
-    session.endTime = new Date();
-    await this.sessionRepo.save(session);
+  session.status = SessionStatus.CLOSED;
+  session.endTime = new Date();
+  await this.sessionRepo.save(session);
 
-    await this.tableRepo.update(session.tableId, {
-      status: TableStatus.AVAILABLE,
-    });
+  const table = await this.tableRepo.findOne({
+    where: { id: session.tableId },
+  });
 
-    return {
-      message: 'Session closed. Thank you for dining with us!',
-      tableNumber: session.table?.tableNumber,
-    };
+  if (table) {
+    // Reduce occupancy by number of people in this session
+    table.currentOccupancy = Math.max(
+      0,
+      table.currentOccupancy - (session.numberOfPeople ?? 1),
+    );
+
+    // Update status based on remaining occupancy
+    if (table.currentOccupancy === 0) {
+      table.status = TableStatus.AVAILABLE;
+    } else {
+      table.status = TableStatus.PARTIALLY_OCCUPIED;
+    }
+
+    await this.tableRepo.save(table);
   }
+
+  return {
+    message: 'Session closed.',
+    tableNumber: table?.tableNumber,
+    remainingOccupancy: table?.currentOccupancy,
+    tableStatus: table?.status,
+  };
+}
 
   // GET /session — all active sessions (kitchen view)
   async getActiveSessions() {

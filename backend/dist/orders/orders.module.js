@@ -17,13 +17,14 @@ const users_module_1 = require("../users/users.module");
 const table_entity_1 = require("../restaurant-table/table.entity");
 const menu_entity_1 = require("../menu/menu.entity");
 const payment_entity_1 = require("../payments/entities/payment.entity");
+const dining_session_entity_1 = require("../dining-session/dining-session.entity");
 let OrdersModule = class OrdersModule {
 };
 exports.OrdersModule = OrdersModule;
 exports.OrdersModule = OrdersModule = __decorate([
     (0, common_1.Module)({
         imports: [
-            typeorm_1.TypeOrmModule.forFeature([order_entity_1.Order, order_item_entity_1.OrderItem, table_entity_1.RestaurantTable, menu_entity_1.Menu, payment_entity_1.Payment]),
+            typeorm_1.TypeOrmModule.forFeature([order_entity_1.Order, order_item_entity_1.OrderItem, table_entity_1.RestaurantTable, menu_entity_1.Menu, payment_entity_1.Payment, dining_session_entity_1.DiningSession]),
             (0, common_1.forwardRef)(() => users_module_1.UsersModule),
         ],
         controllers: [orders_controller_1.OrdersController],

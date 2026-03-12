@@ -9,11 +9,12 @@ import { UsersModule } from 'src/users/users.module';
 import { RestaurantTable } from 'src/restaurant-table/table.entity';
 import { Menu } from 'src/menu/menu.entity';
 import { Payment } from 'src/payments/entities/payment.entity';
+import { DiningSession } from 'src/dining-session/dining-session.entity';
 
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Order, OrderItem, RestaurantTable,   Menu, Payment]),
+    TypeOrmModule.forFeature([Order, OrderItem, RestaurantTable,   Menu, Payment, DiningSession]),
      forwardRef(() => UsersModule),
   ],
   controllers: [OrdersController],
