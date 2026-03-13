@@ -32,10 +32,21 @@ export class OrdersService {
 
     @InjectRepository(DiningSession)
     private sessionRepo: Repository<DiningSession>, // ← inject session repo
+
+     @InjectRepository(User)          // ← add this
+    private userRepo: Repository<User>,
   ) {}
 
-  async createOrder(user: User, sessionToken: string): Promise<Order> {
+  async createOrder(userPayload: any, sessionToken: string): Promise<Order> {
+     // Find full user from JWT payload
+  const user = await this.userRepo.findOne({
+    where: { id: userPayload.sub ?? userPayload.id },
+  });
+
+  if (!user) throw new NotFoundException('User not found');
+    
     // Find active or pending session
+
     const session = await this.sessionRepo.findOne({
       where: [
         { sessionToken, status: SessionStatus.ACTIVE },

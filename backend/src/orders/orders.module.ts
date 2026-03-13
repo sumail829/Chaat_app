@@ -10,11 +10,12 @@ import { RestaurantTable } from 'src/restaurant-table/table.entity';
 import { Menu } from 'src/menu/menu.entity';
 import { Payment } from 'src/payments/entities/payment.entity';
 import { DiningSession } from 'src/dining-session/dining-session.entity';
+import { User } from 'src/users/user.entity';
 
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Order, OrderItem, RestaurantTable,   Menu, Payment, DiningSession]),
+    TypeOrmModule.forFeature([Order, OrderItem, RestaurantTable,   Menu, Payment, DiningSession,User]),
      forwardRef(() => UsersModule),
   ],
   controllers: [OrdersController],

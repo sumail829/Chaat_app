@@ -15,8 +15,9 @@ export declare class OrdersService {
     private menuRepo;
     private paymentRepo;
     private sessionRepo;
-    constructor(orderRepo: Repository<Order>, orderItemRepo: Repository<OrderItem>, tableRepo: Repository<RestaurantTable>, menuRepo: Repository<Menu>, paymentRepo: Repository<Payment>, sessionRepo: Repository<DiningSession>);
-    createOrder(user: User, sessionToken: string): Promise<Order>;
+    private userRepo;
+    constructor(orderRepo: Repository<Order>, orderItemRepo: Repository<OrderItem>, tableRepo: Repository<RestaurantTable>, menuRepo: Repository<Menu>, paymentRepo: Repository<Payment>, sessionRepo: Repository<DiningSession>, userRepo: Repository<User>);
+    createOrder(userPayload: any, sessionToken: string): Promise<Order>;
     addItems(orderId: string, dto: AddOrderItemsDto): Promise<{
         message: string;
         addedItems: OrderItem[];

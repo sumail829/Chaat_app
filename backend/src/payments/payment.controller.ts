@@ -7,7 +7,7 @@ import { CompletePaymentDto } from "./dto/complete-payment.dto";
 import { PaymentService } from "./payment.service";
 
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.ADMIN)
+// @Roles(UserRole.ADMIN)
 @Controller('payments')
 export class PaymentController {
   constructor(private paymentService: PaymentService) {}

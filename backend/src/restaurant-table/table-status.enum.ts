@@ -1,5 +1,6 @@
 export enum TableStatus {
-  AVAILABLE = 'available',
-  PARTIALLY_OCCUPIED = 'partially_occupied', // ← new
-  OCCUPIED = 'occupied',
+  AVAILABLE = 'AVAILABLE',
+  OCCUPIED = 'OCCUPIED',
+  RESERVED = 'RESERVED',
+  PARTIALLY_OCCUPIED = 'partially_occupied',
 }

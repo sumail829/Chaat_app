@@ -22,15 +22,18 @@ const order_status_enum_1 = require("../orders/order-status.enum");
 const payment_entity_1 = require("./entities/payment.entity");
 const table_entity_1 = require("../restaurant-table/table.entity");
 const table_status_enum_1 = require("../restaurant-table/table-status.enum");
+const dining_session_entity_1 = require("../dining-session/dining-session.entity");
 let PaymentService = class PaymentService {
     paymentRepo;
     orderRepo;
     tableRepo;
+    sessionRepo;
     dataSource;
-    constructor(paymentRepo, orderRepo, tableRepo, dataSource) {
+    constructor(paymentRepo, orderRepo, tableRepo, sessionRepo, dataSource) {
         this.paymentRepo = paymentRepo;
         this.orderRepo = orderRepo;
         this.tableRepo = tableRepo;
+        this.sessionRepo = sessionRepo;
         this.dataSource = dataSource;
     }
     async completePayment(orderId, dto) {
@@ -68,6 +71,21 @@ let PaymentService = class PaymentService {
             await manager.save(payment);
             await manager.save(order);
             await manager.save(table);
+            const session = await manager.getRepository(dining_session_entity_1.DiningSession).findOne({
+                where: { sessionToken: order.sessionToken },
+            });
+            if (session) {
+                session.status = dining_session_entity_1.SessionStatus.CLOSED;
+                session.endTime = new Date();
+                await manager.save(session);
+            }
+            table.currentOccupancy = Math.max(0, table.currentOccupancy - 1);
+            if (table.currentOccupancy === 0) {
+                table.status = table_status_enum_1.TableStatus.AVAILABLE;
+            }
+            else {
+                table.status = table_status_enum_1.TableStatus.PARTIALLY_OCCUPIED;
+            }
             return {
                 message: 'Payment completed successfully',
                 orderId: order.id,
@@ -82,7 +100,9 @@ exports.PaymentService = PaymentService = __decorate([
     __param(0, (0, typeorm_1.InjectRepository)(payment_entity_1.Payment)),
     __param(1, (0, typeorm_1.InjectRepository)(order_entity_1.Order)),
     __param(2, (0, typeorm_1.InjectRepository)(table_entity_1.RestaurantTable)),
+    __param(3, (0, typeorm_1.InjectRepository)(dining_session_entity_1.DiningSession)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
+        typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.DataSource])

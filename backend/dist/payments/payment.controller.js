@@ -15,9 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.PaymentController = void 0;
 const common_1 = require("@nestjs/common");
 const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
-const roles_decorator_1 = require("../auth/roles.decorator");
 const roles_guard_1 = require("../auth/roles.guard");
-const create_user_dto_1 = require("../users/dto/create-user.dto");
 const complete_payment_dto_1 = require("./dto/complete-payment.dto");
 const payment_service_1 = require("./payment.service");
 let PaymentController = class PaymentController {
@@ -40,7 +38,6 @@ __decorate([
 ], PaymentController.prototype, "completePayment", null);
 exports.PaymentController = PaymentController = __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
-    (0, roles_decorator_1.Roles)(create_user_dto_1.UserRole.ADMIN),
     (0, common_1.Controller)('payments'),
     __metadata("design:paramtypes", [payment_service_1.PaymentService])
 ], PaymentController);

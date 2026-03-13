@@ -16,6 +16,7 @@ exports.OrdersController = void 0;
 const common_1 = require("@nestjs/common");
 const orders_service_1 = require("./orders.service");
 const create_order_dto_1 = require("./dto/create-order.dto");
+const add_order_item_dto_1 = require("./dto/add-order-item.dto");
 const passport_1 = require("@nestjs/passport");
 let OrdersController = class OrdersController {
     ordersService;
@@ -27,6 +28,9 @@ let OrdersController = class OrdersController {
     }
     getOrdersBySession(sessionToken) {
         return this.ordersService.findOrdersBySession(sessionToken);
+    }
+    addItems(id, dto) {
+        return this.ordersService.addItems(id, dto);
     }
 };
 exports.OrdersController = OrdersController;
@@ -46,6 +50,14 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "getOrdersBySession", null);
+__decorate([
+    (0, common_1.Post)(':id/items'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, add_order_item_dto_1.AddOrderItemsDto]),
+    __metadata("design:returntype", void 0)
+], OrdersController.prototype, "addItems", null);
 exports.OrdersController = OrdersController = __decorate([
     (0, common_1.Controller)('orders'),
     __metadata("design:paramtypes", [orders_service_1.OrdersService])

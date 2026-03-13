@@ -8,6 +8,7 @@ import { OrderStatus } from "src/orders/order-status.enum";
 import { Payment } from "./entities/payment.entity";
 import { RestaurantTable } from "src/restaurant-table/table.entity";
 import { TableStatus } from "src/restaurant-table/table-status.enum";
+import { DiningSession, SessionStatus } from "src/dining-session/dining-session.entity";
 
 @Injectable()
 export class PaymentService {
@@ -20,6 +21,9 @@ export class PaymentService {
 
     @InjectRepository(RestaurantTable)
     private tableRepo: Repository<RestaurantTable>,
+
+    @InjectRepository(DiningSession)
+private sessionRepo: Repository<DiningSession>,
 
     private dataSource: DataSource,
   ) { }
@@ -73,6 +77,24 @@ await manager.save(payment);
 await manager.save(order);
 await manager.save(table);
 
+
+const session = await manager.getRepository(DiningSession).findOne({
+  where: { sessionToken: order.sessionToken },
+});
+
+if (session) {
+  session.status = SessionStatus.CLOSED;
+  session.endTime = new Date();
+  await manager.save(session);
+}
+
+// Also reduce table occupancy
+table.currentOccupancy = Math.max(0, table.currentOccupancy - 1);
+if (table.currentOccupancy === 0) {
+  table.status = TableStatus.AVAILABLE;
+} else {
+  table.status = TableStatus.PARTIALLY_OCCUPIED;
+}
       return {
         message: 'Payment completed successfully',
         orderId: order.id,

@@ -20,6 +20,7 @@ const typeorm_2 = require("typeorm");
 const order_item_entity_1 = require("./entities/order-item.entity");
 const table_entity_1 = require("../restaurant-table/table.entity");
 const menu_entity_1 = require("../menu/menu.entity");
+const user_entity_1 = require("../users/user.entity");
 const payment_entity_1 = require("../payments/entities/payment.entity");
 const payment_status_enum_1 = require("../payments/payment-enum/payment-status.enum");
 const order_status_enum_1 = require("./order-status.enum");
@@ -31,15 +32,22 @@ let OrdersService = class OrdersService {
     menuRepo;
     paymentRepo;
     sessionRepo;
-    constructor(orderRepo, orderItemRepo, tableRepo, menuRepo, paymentRepo, sessionRepo) {
+    userRepo;
+    constructor(orderRepo, orderItemRepo, tableRepo, menuRepo, paymentRepo, sessionRepo, userRepo) {
         this.orderRepo = orderRepo;
         this.orderItemRepo = orderItemRepo;
         this.tableRepo = tableRepo;
         this.menuRepo = menuRepo;
         this.paymentRepo = paymentRepo;
         this.sessionRepo = sessionRepo;
+        this.userRepo = userRepo;
     }
-    async createOrder(user, sessionToken) {
+    async createOrder(userPayload, sessionToken) {
+        const user = await this.userRepo.findOne({
+            where: { id: userPayload.sub ?? userPayload.id },
+        });
+        if (!user)
+            throw new common_1.NotFoundException('User not found');
         const session = await this.sessionRepo.findOne({
             where: [
                 { sessionToken, status: dining_session_entity_1.SessionStatus.ACTIVE },
@@ -137,7 +145,9 @@ exports.OrdersService = OrdersService = __decorate([
     __param(3, (0, typeorm_1.InjectRepository)(menu_entity_1.Menu)),
     __param(4, (0, typeorm_1.InjectRepository)(payment_entity_1.Payment)),
     __param(5, (0, typeorm_1.InjectRepository)(dining_session_entity_1.DiningSession)),
+    __param(6, (0, typeorm_1.InjectRepository)(user_entity_1.User)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
+        typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,

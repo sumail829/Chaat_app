@@ -20,4 +20,9 @@ createOrder(@Req() req, @Body() dto: CreateOrderDto) {
 getOrdersBySession(@Param('sessionToken') sessionToken: string) {
   return this.ordersService.findOrdersBySession(sessionToken);
 }
+
+@Post(':id/items')
+addItems(@Param('id') id: string, @Body() dto: AddOrderItemsDto) {
+  return this.ordersService.addItems(id, dto);
+}
 }
