@@ -157,4 +157,52 @@ export class OrdersService {
       relations: ['items', 'items.menu', 'payment'],
     });
   }
+
+  async updateOrderStatus(orderId: string, status: OrderStatus): Promise<Order> {
+  const order = await this.orderRepo.findOne({
+    where: { id: orderId },
+    relations: ['table', 'items', 'items.menu'],
+  });
+
+  if (!order) throw new NotFoundException('Order not found');
+
+  if (order.status === OrderStatus.CANCELLED) {
+    throw new BadRequestException('Cannot update a cancelled order');
+  }
+
+  if (order.status === OrderStatus.SERVED) {
+    throw new BadRequestException('Order already served');
+  }
+
+  // Enforce valid transitions
+  const validTransitions: Record<OrderStatus, OrderStatus[]> = {
+    [OrderStatus.PENDING]:    [OrderStatus.CONFIRMED, OrderStatus.CANCELLED],
+    [OrderStatus.CONFIRMED]:  [OrderStatus.PREPARING, OrderStatus.CANCELLED],
+    [OrderStatus.PREPARING]:  [OrderStatus.SERVED],
+    [OrderStatus.SERVED]:     [],
+    [OrderStatus.CANCELLED]:  [],
+  };
+
+  if (!validTransitions[order.status].includes(status)) {
+    throw new BadRequestException(
+      `Cannot transition from ${order.status} to ${status}`,
+    );
+  }
+
+  order.status = status;
+  return this.orderRepo.save(order);
+}
+
+// Get all active orders (kitchen view)
+async getActiveOrders(): Promise<Order[]> {
+  return this.orderRepo.find({
+    where: [
+      { status: OrderStatus.PENDING },
+      { status: OrderStatus.CONFIRMED },
+      { status: OrderStatus.PREPARING },
+    ],
+    relations: ['items', 'items.menu', 'table'],
+    order: { createdAt: 'ASC' },
+  });
+}
 }

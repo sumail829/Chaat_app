@@ -135,6 +135,43 @@ let OrdersService = class OrdersService {
             relations: ['items', 'items.menu', 'payment'],
         });
     }
+    async updateOrderStatus(orderId, status) {
+        const order = await this.orderRepo.findOne({
+            where: { id: orderId },
+            relations: ['table', 'items', 'items.menu'],
+        });
+        if (!order)
+            throw new common_1.NotFoundException('Order not found');
+        if (order.status === order_status_enum_1.OrderStatus.CANCELLED) {
+            throw new common_1.BadRequestException('Cannot update a cancelled order');
+        }
+        if (order.status === order_status_enum_1.OrderStatus.SERVED) {
+            throw new common_1.BadRequestException('Order already served');
+        }
+        const validTransitions = {
+            [order_status_enum_1.OrderStatus.PENDING]: [order_status_enum_1.OrderStatus.CONFIRMED, order_status_enum_1.OrderStatus.CANCELLED],
+            [order_status_enum_1.OrderStatus.CONFIRMED]: [order_status_enum_1.OrderStatus.PREPARING, order_status_enum_1.OrderStatus.CANCELLED],
+            [order_status_enum_1.OrderStatus.PREPARING]: [order_status_enum_1.OrderStatus.SERVED],
+            [order_status_enum_1.OrderStatus.SERVED]: [],
+            [order_status_enum_1.OrderStatus.CANCELLED]: [],
+        };
+        if (!validTransitions[order.status].includes(status)) {
+            throw new common_1.BadRequestException(`Cannot transition from ${order.status} to ${status}`);
+        }
+        order.status = status;
+        return this.orderRepo.save(order);
+    }
+    async getActiveOrders() {
+        return this.orderRepo.find({
+            where: [
+                { status: order_status_enum_1.OrderStatus.PENDING },
+                { status: order_status_enum_1.OrderStatus.CONFIRMED },
+                { status: order_status_enum_1.OrderStatus.PREPARING },
+            ],
+            relations: ['items', 'items.menu', 'table'],
+            order: { createdAt: 'ASC' },
+        });
+    }
 };
 exports.OrdersService = OrdersService;
 exports.OrdersService = OrdersService = __decorate([

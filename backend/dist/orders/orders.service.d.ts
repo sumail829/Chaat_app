@@ -7,6 +7,7 @@ import { User } from "src/users/user.entity";
 import { AddOrderItemsDto } from "./dto/add-order-item.dto";
 import { Payment } from "src/payments/entities/payment.entity";
 import { PaymentStatus } from "src/payments/payment-enum/payment-status.enum";
+import { OrderStatus } from "./order-status.enum";
 import { DiningSession } from "src/dining-session/dining-session.entity";
 export declare class OrdersService {
     private orderRepo;
@@ -27,4 +28,6 @@ export declare class OrdersService {
     }>;
     findAllorders(): Promise<Order[]>;
     findOrdersBySession(sessionToken: string): Promise<Order[]>;
+    updateOrderStatus(orderId: string, status: OrderStatus): Promise<Order>;
+    getActiveOrders(): Promise<Order[]>;
 }
